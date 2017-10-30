@@ -7,7 +7,7 @@ class User(models.Model):
     uid = models.IntegerField()
     gecos = models.CharField(max_length=128, blank=True)
     shell = models.CharField(max_length=32, blank=True)
-    password_hash = models.CharField(max_length=256, null=True, blank=True)
+    password = models.CharField(max_length=256, null=True, blank=True)
     directory = models.CharField(max_length=256, blank=True)
     expiry_date = models.DateField(null=True, blank=True)
     disabled = models.BooleanField()
@@ -18,7 +18,7 @@ class User(models.Model):
 class PublicKey(models.Model):
     name = models.CharField(max_length=256)
     key = models.TextField()
-    finger_print = models.CharField(max_length=256, blank=True)
+    finger_print = models.CharField(max_length=256, blank=True, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -26,7 +26,7 @@ class PublicKey(models.Model):
 
 class Server(models.Model):
     name = models.CharField(max_length=256)
-    password_hash = models.CharField(max_length=256, blank=True, null=True)
+    password = models.CharField(max_length=256, blank=True, null=True)
     description = models.CharField(max_length=256, blank=True)
 
     def __str__(self):
