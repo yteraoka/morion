@@ -4,7 +4,15 @@ from sshpubkeys import SSHKey
 
 # Register your models here.
 
-from .models import User, Server, Role, PublicKey
+from .models import User, Server, Role, PublicKey, UserRoleMembership, ServerRoleMembership
+
+class UserRoleInline(admin.StackedInline):
+    model = UserRoleMembership
+    extra = 1
+
+class ServerRoleInline(admin.StackedInline):
+    model = ServerRoleMembership
+    extra = 1
 
 class PublicKeyInline(admin.TabularInline):
     model = PublicKey
@@ -16,14 +24,24 @@ class PublicKeyInline(admin.TabularInline):
         super(PublicKeyInline, self).save_model(request, obj, form, change)
 
 class UserAdmin(admin.ModelAdmin):
-    inlines = [PublicKeyInline]
+    inlines = [PublicKeyInline, UserRoleInline]
     list_display = ('name', 'uid', 'gecos', 'disabled')
     search_fields = ['name']
     def save_model(self, request, obj, form, change):
-        if not request.POST['password'].startswith('$6$'):
+        obj.name = obj.name.lower()
+        if request.POST['shell'] == '':
+            obj.shell = '/bin/bash'
+        if request.POST['directory'] == '':
+            obj.directory = '/home/' + obj.name
+        if request.POST['password'] == '':
+            obj.password = None
+        elif not request.POST['password'].startswith('$6$'):
             obj.password = sha512_crypt.using(rounds=5000).hash(request.POST['password'])
         super(UserAdmin, self).save_model(request, obj, form, change)
 
+class ServerAdmin(admin.ModelAdmin):
+    inlines = [ServerRoleInline]
+
 admin.site.register(User, UserAdmin)
-admin.site.register(Server)
+admin.site.register(Server, ServerAdmin)
 admin.site.register(Role)
