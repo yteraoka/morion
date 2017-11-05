@@ -4,7 +4,7 @@ from sshpubkeys import SSHKey
 
 # Register your models here.
 
-from .models import User, Server, Role, PublicKey, UserRoleMembership, ServerRoleMembership
+from .models import Group, User, Server, Role, PublicKey, UserRoleMembership, ServerRoleMembership
 
 class UserRoleInline(admin.StackedInline):
     model = UserRoleMembership
@@ -41,7 +41,14 @@ class UserAdmin(admin.ModelAdmin):
 
 class ServerAdmin(admin.ModelAdmin):
     inlines = [ServerRoleInline]
+    def save_model(self, request, obj, form, change):
+        if request.POST['password'] == '':
+            obj.password = None
+        elif not request.POST['password'].startswith('$6$'):
+            obj.password = sha512_crypt.using(rounds=5000).hash(request.POST['password'])
+        super(ServerAdmin, self).save_model(request, obj, form, change)
 
 admin.site.register(User, UserAdmin)
 admin.site.register(Server, ServerAdmin)
 admin.site.register(Role)
+admin.site.register(Group)

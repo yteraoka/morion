@@ -119,3 +119,28 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
+
+API_VERSION = 2.1
+MIN_ID = 900
+CLIENT_AUTH_METHOD = 'basic'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django.db.backends': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+        'debug': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        }
+    },
+}
