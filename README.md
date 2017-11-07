@@ -51,3 +51,26 @@ http://stns.jp/en/interface
   "link_users": null
 }
 ```
+
+## Install client
+
+http://stns.jp/ja/install
+
+### RHEL / CentOS
+
+```
+curl -fsSL https://repo.stns.jp/scripts/yum-repo.sh | sh
+yum -y install stns libnss-stns libpam-stns nscd
+```
+
+SELinux が Enforce だとうまく動かない
+
+```
+type=AVC msg=audit(1510069044.534:214): avc:  denied  { name_connect } for  pid=1567 comm="stns-key-wrappe" dest=8000 scontext=system_u:system_r:sshd_t:s0-s0:c0.c1023 tcontext=system_u:object_r:soundd_port_t:s0 tclass=tcp_socket
+```
+
+### Debian / Ubuntu
+
+```
+curl -fsSL https://repo.stns.jp/scripts/apt-repo.sh | sh
+```
