@@ -52,6 +52,24 @@ http://stns.jp/en/interface
 }
 ```
 
+## setup
+
+### Ubuntu
+
+```
+apt install gcc python3-venv python3-dev
+python3 -m venv venv
+. venv/bin/activate
+pip install -r requirements.txt
+```
+
+```
+python manage.py migrate
+python manage.py createsuperuser
+python manage.py runserver
+```
+
+
 ## Install client
 
 http://stns.jp/ja/install
