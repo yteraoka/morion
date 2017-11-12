@@ -4,7 +4,7 @@ from sshpubkeys import SSHKey
 
 # Register your models here.
 
-from .models import Group, User, Server, Role, PublicKey, UserRoleMembership, ServerRoleMembership
+from .models import Group, User, Server, Role, PublicKey, UserRoleMembership, ServerRoleMembership, UserGroupMembership
 
 class UserRoleInline(admin.StackedInline):
     model = UserRoleMembership
@@ -12,6 +12,10 @@ class UserRoleInline(admin.StackedInline):
 
 class ServerRoleInline(admin.StackedInline):
     model = ServerRoleMembership
+    extra = 1
+
+class UserGroupInline(admin.StackedInline):
+    model = UserGroupMembership
     extra = 1
 
 class PublicKeyInline(admin.TabularInline):
@@ -24,7 +28,7 @@ class PublicKeyInline(admin.TabularInline):
         super(PublicKeyInline, self).save_model(request, obj, form, change)
 
 class UserAdmin(admin.ModelAdmin):
-    inlines = [PublicKeyInline, UserRoleInline]
+    inlines = [PublicKeyInline, UserRoleInline, UserGroupInline]
     list_display = ('name', 'uid', 'gecos', 'disabled')
     search_fields = ['name']
     def save_model(self, request, obj, form, change):

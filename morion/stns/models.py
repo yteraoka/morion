@@ -13,9 +13,10 @@ class Role(models.Model):
 class Group(models.Model):
     name = models.CharField(max_length=32, unique=True)
     gid = models.IntegerField(unique=True)
+    description = models.CharField(max_length=256, blank=True)
 
     def __str__(self):
-        return self.name
+        return "{0} (gid:{1})".format(self.name, self.gid)
 
 
 class User(models.Model):
@@ -27,7 +28,7 @@ class User(models.Model):
     directory = models.CharField(max_length=256, blank=True)
     expiry_date = models.DateField(null=True, blank=True)
     disabled = models.BooleanField()
-    group = models.ForeignKey(Group)
+    groups = models.ManyToManyField(Group, through='UserGroupMembership')
     roles = models.ManyToManyField(Role, through='UserRoleMembership')
 
     def __str__(self):
@@ -61,6 +62,16 @@ class UserRoleMembership(models.Model):
 
     def __str__(self):
         return "{0}--{1}".format(self.user.name, self.role.name)
+
+
+class UserGroupMembership(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    primary = models.BooleanField()
+    joined_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return "{0}--{1}".format(self.user.name, self.group.name)
 
 
 class ServerRoleMembership(models.Model):
