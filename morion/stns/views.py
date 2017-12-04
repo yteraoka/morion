@@ -181,10 +181,10 @@ def view_group_list(request):
 def view_group_by_gid(request, gid):
     result = {}
     min_gid, items = group_list(request)
-    for group in items:
-        if group.gid == gid:
+    for group_name in items:
+        if items[group_name]['id'] == int(gid):
             result['items'] = {
-                group.name: group
+                group_name: items[group_name]
             }
             break
     result['metadata'] = meta_data('success', min_gid)
@@ -198,7 +198,9 @@ def view_group_by_name(request, group_name):
     if group_name not in items:
         return HttpResponseNotFound('Resource not found')
     result = {
-            'items': items[group_name],
+            'items': {
+	        group_name: items[group_name],
+            },
             'metadata': meta_data('success', min_gid),
     }
     return json_response(result, request)
