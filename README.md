@@ -53,7 +53,7 @@ http://stns.jp/en/interface
 }
 ```
 
-## setup
+## Server Setup
 
 ### CentOS 7
 
@@ -72,13 +72,13 @@ python manage.py createsuperuser
 python manage.py runserver 0.0.0.0:8000
 ```
 
-## Install client
+## Client Setup
 
 http://stns.jp/ja/install
 
 ### RHEL / CentOS
 
-#### ロpackage のインストールと libnss_stns.conf 設定
+#### package のインストールと libnss_stns.conf 設定
 
 ```
 curl -fsSL https://repo.stns.jp/scripts/yum-repo.sh | sh
