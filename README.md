@@ -1,12 +1,13 @@
 # morion
-STNS backed
+
+STNS server
 
 http://stns.jp/en/interface
 
 ## ENdPoint
 
 | path                          | Description            |
-|----------------- -------------|------------------------|
+|-------------------------------|------------------------|
 | /v2/user/list                 | user list              |
 | /v2/user/name/:user_name      | find by user name      |
 | /v2/user/id/:uid              | find by user id        |
@@ -54,21 +55,22 @@ http://stns.jp/en/interface
 
 ## setup
 
-### Ubuntu
+### CentOS 7
 
 ```
-apt install gcc python3-venv python3-dev
-python3 -m venv venv
+sudo yum -y install https://centos7.iuscommunity.org/ius-release.rpm
+sudo yum -y install git gcc python36u python36u-devel python36u-pip
+git clone https://github.com/yteraoka/morion.git
+cd morion
+git checkout develop
+python3.6 -m venv venv
 . venv/bin/activate
 pip install -r requirements.txt
-```
-
-```
+cd morion
 python manage.py migrate
 python manage.py createsuperuser
-python manage.py runserver
+python manage.py runserver 0.0.0.0:8000
 ```
-
 
 ## Install client
 
@@ -76,19 +78,58 @@ http://stns.jp/ja/install
 
 ### RHEL / CentOS
 
+#### ロpackage のインストールと libnss_stns.conf 設定
+
 ```
 curl -fsSL https://repo.stns.jp/scripts/yum-repo.sh | sh
-yum -y install stns libnss-stns libpam-stns nscd
+sudo yum -y install stns libnss-stns libpam-stns nscd
+sudoedit /etc/stns/libnss_stns.conf
 ```
 
-SELinux が Enforce だとうまく動かない
+#### ログイン時に Home directory を作成するための設定
 
 ```
-type=AVC msg=audit(1510069044.534:214): avc:  denied  { name_connect } for  pid=1567 comm="stns-key-wrappe" dest=8000 scontext=system_u:system_r:sshd_t:s0-s0:c0.c1023 tcontext=system_u:object_r:soundd_port_t:s0 tclass=tcp_socket
+echo 'session required pam_mkhomedir.so skel=/etc/skel/ umask=0022' \
+   | sudo bash -c "cat >> /etc/pam.d/sshd"
 ```
 
-### Debian / Ubuntu
+#### OpenSSH Server が Public key を stns から取得できるようにする
 
 ```
-curl -fsSL https://repo.stns.jp/scripts/apt-repo.sh | sh
+sudo sed -i -r \
+  -e 's@^#?(AuthorizedKeysCommand) .*@\1 /usr/lib/stns/stns-key-wrapper@' \
+  -e 's@^#?(AuthorizedKeysCommandUser) .*@\1 root@' \
+   /tmp/sshd_config
 ```
+
+#### nsswitch.conf 設定 (passwd, shadow, group に stns を追加)
+
+```
+sudoedit /etc/nsswitch.conf
+```
+
+```
+passwd:     files sss stns
+shadow:     files sss stns
+group:      files sss stns
+```
+
+#### nscd.conf 設定 (毎回外部へ問い合わせていては遅いのでキャッシュさせる)
+
+```
+sudoedit /etc/nscd.conf
+sudo systemctl enable nscd
+sudo systemctl start nscd
+```
+
+TTL 設定が期待とちがってよくわからん・・・
+
+#### SELinux が有効だとうまく動かないため、関係するドメインを無効にする
+
+```
+sudo yum -y install policycoreutils-python
+sudo semanage permissive -a sshd_t
+sudo semanage permissive -a chkpwd_t
+sudo semanage permissive -a nscd_t
+```
+
